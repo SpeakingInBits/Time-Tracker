@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Time Tracker - Track your work hours by project">
+    <meta name="theme-color" content="#4F46E5">
+    <title>Time Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="icon-192.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⏱️ Time Tracker</h1>
+            <p class="subtitle">Track your work hours by project</p>
+        </header>
+
+        <main>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="add-entry">➕ Add Entry</button>
+                <button class="tab-btn" data-tab="view-summary">📊 View & Summary</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Add Entry Tab -->
+                <div id="add-entry" class="tab-panel active">
+                    <section class="card">
+                        <h2>Add Time Entry</h2>
+                        <form id="timeEntryForm">
+                            <div class="form-group">
+                                <label for="date">Date</label>
+                                <input type="date" id="date" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="startTime">Start Time</label>
+                                    <input type="time" id="startTime" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="endTime">End Time</label>
+                                    <input type="time" id="endTime" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="project">Project</label>
+                                <input type="text" id="project" list="projectsList" placeholder="Enter or select project" required>
+                                <datalist id="projectsList"></datalist>
+                                <small class="form-hint">Start typing to see existing projects</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea id="description" rows="3" placeholder="What did you work on?" required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Add Entry</button>
+                        </form>
+                    </section>
+                </div>
+
+                <!-- View & Summary Tab -->
+                <div id="view-summary" class="tab-panel">
+                    <!-- Filter Status -->
+                    <div id="filterStatus" class="filter-status"></div>
+                    
+                    <!-- Summary Section -->
+                    <section class="card summary-section">
+                        <h2>Time Summary</h2>
+                        <div id="summaryByProject"></div>
+                        <div class="total-time">
+                            <strong>Total Time:</strong> <span id="totalTime">0h 0m</span>
+                        </div>
+                    </section>
+
+                    <!-- Filter Section -->
+                    <section class="card">
+                        <h2>Filter Entries</h2>
+                        <div class="filter-controls">
+                            <div class="filter-shortcuts">
+                                <button id="filterCurrentMonth" class="btn btn-shortcut">📅 Current Month</button>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="filterStartDate">From Date</label>
+                                    <input type="date" id="filterStartDate">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="filterEndDate">To Date</label>
+                                    <input type="date" id="filterEndDate">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="filterProject">Project</label>
+                                <select id="filterProject">
+                                    <option value="">All Projects</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-buttons">
+                                <button id="applyFilter" class="btn btn-secondary">Apply Filter</button>
+                                <button id="clearFilter" class="btn btn-outline">Clear Filter</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Time Entries List -->
+                    <section class="card">
+                        <h2>Time Entries</h2>
+                        <div id="entriesList"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
