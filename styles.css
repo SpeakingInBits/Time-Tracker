@@ -195,6 +195,33 @@ textarea {
     margin-top: 8px;
 }
 
+.time-slot {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--bg-color);
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+.time-slot-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.time-slot-times {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.time-to {
+    font-weight: 500;
+    color: var(--text-secondary);
+    padding: 0 8px;
+}
+
 .time-inputs {
     display: flex;
     align-items: center;
@@ -214,6 +241,49 @@ textarea {
     font-weight: bold;
     font-size: 1.2rem;
     color: var(--text-secondary);
+}
+
+.btn-remove {
+    padding: 8px 12px;
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.btn-remove:hover {
+    background: #DC2626;
+}
+
+#addTimeSlot {
+    margin-top: 8px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .time-slot-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .time-slot-times {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .time-to {
+        text-align: center;
+        padding: 4px 0;
+    }
+    
+    .btn-remove {
+        width: 100%;
+    }
 }
 
 .btn {

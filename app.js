@@ -8,6 +8,7 @@ class TimeTracker {
             endDate: null,
             project: null
         };
+        this.timeSlotCounter = 0;
         this.init();
     }
 
@@ -38,6 +39,11 @@ class TimeTracker {
             this.handleProjectSelectChange(e.target.value);
         });
 
+        // Add time slot button
+        document.getElementById('addTimeSlot').addEventListener('click', () => {
+            this.addTimeSlot();
+        });
+
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -48,6 +54,9 @@ class TimeTracker {
         // Initial render
         this.updateProjectsDatalist();
         this.updateFilterProjectDropdown();
+        
+        // Add initial time slot
+        this.addTimeSlot();
         
         // Set current month as default filter
         this.filterCurrentMonth();
@@ -76,6 +85,69 @@ class TimeTracker {
             if (hour !== 12) hour24 = hour + 12;
         }
         return `${hour24.toString().padStart(2, '0')}:${minute}`;
+    }
+
+    // Add a new time slot
+    addTimeSlot() {
+        const slotId = this.timeSlotCounter++;
+        const container = document.getElementById('timeSlotsContainer');
+        
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'time-slot';
+        slotDiv.dataset.slotId = slotId;
+        
+        slotDiv.innerHTML = `
+            <div class="time-slot-row">
+                <div class="time-slot-times">
+                    <div class="time-inputs">
+                        <input type="number" class="start-hour" min="1" max="12" placeholder="12">
+                        <span class="time-separator">:</span>
+                        <select class="start-minute">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select class="start-period">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                    <span class="time-to">to</span>
+                    <div class="time-inputs">
+                        <input type="number" class="end-hour" min="1" max="12" placeholder="12">
+                        <span class="time-separator">:</span>
+                        <select class="end-minute">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select class="end-period">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-remove" onclick="tracker.removeTimeSlot(${slotId})">✕</button>
+            </div>
+        `;
+        
+        container.appendChild(slotDiv);
+    }
+
+    // Remove a time slot
+    removeTimeSlot(slotId) {
+        const slot = document.querySelector(`.time-slot[data-slot-id="${slotId}"]`);
+        if (slot) {
+            // Don't remove if it's the only slot
+            const totalSlots = document.querySelectorAll('.time-slot').length;
+            if (totalSlots > 1) {
+                slot.remove();
+            } else {
+                alert('You must have at least one time slot!');
+            }
+        }
     }
 
     // Handle project select change
@@ -118,19 +190,6 @@ class TimeTracker {
     // Add new time entry
     addEntry() {
         const date = document.getElementById('date').value;
-        
-        // Get start time from 3 inputs
-        const startHour = parseInt(document.getElementById('startHour').value);
-        const startMinute = document.getElementById('startMinute').value;
-        const startPeriod = document.getElementById('startPeriod').value;
-        const startTime = this.convertTo24Hour(startHour, startMinute, startPeriod);
-        
-        // Get end time from 3 inputs
-        const endHour = parseInt(document.getElementById('endHour').value);
-        const endMinute = document.getElementById('endMinute').value;
-        const endPeriod = document.getElementById('endPeriod').value;
-        const endTime = this.convertTo24Hour(endHour, endMinute, endPeriod);
-        
         const projectSelect = document.getElementById('project');
         const newProjectInput = document.getElementById('newProjectInput');
         
@@ -148,23 +207,59 @@ class TimeTracker {
         
         const description = document.getElementById('description').value.trim();
 
-        // Validate end time is after start time
-        if (!this.isValidTimeRange(startTime, endTime)) {
-            alert('End time must be after start time!');
+        // Collect all time slots
+        const timeSlots = document.querySelectorAll('.time-slot');
+        const validEntries = [];
+        
+        timeSlots.forEach(slot => {
+            const startHourInput = slot.querySelector('.start-hour');
+            const startMinuteInput = slot.querySelector('.start-minute');
+            const startPeriodInput = slot.querySelector('.start-period');
+            const endHourInput = slot.querySelector('.end-hour');
+            const endMinuteInput = slot.querySelector('.end-minute');
+            const endPeriodInput = slot.querySelector('.end-period');
+            
+            // Only process if at least start hour is filled
+            if (startHourInput.value) {
+                const startHour = parseInt(startHourInput.value);
+                const startMinute = startMinuteInput.value;
+                const startPeriod = startPeriodInput.value;
+                const startTime = this.convertTo24Hour(startHour, startMinute, startPeriod);
+                
+                const endHour = parseInt(endHourInput.value);
+                const endMinute = endMinuteInput.value;
+                const endPeriod = endPeriodInput.value;
+                const endTime = this.convertTo24Hour(endHour, endMinute, endPeriod);
+                
+                // Validate end time is after start time
+                if (!this.isValidTimeRange(startTime, endTime)) {
+                    alert('End time must be after start time in all slots!');
+                    validEntries.length = 0; // Clear valid entries
+                    return;
+                }
+                
+                validEntries.push({
+                    id: Date.now() + validEntries.length,
+                    date,
+                    startTime,
+                    endTime,
+                    project,
+                    description,
+                    duration: this.calculateDuration(startTime, endTime)
+                });
+            }
+        });
+        
+        if (validEntries.length === 0) {
+            alert('Please fill in at least one time slot!');
             return;
         }
-
-        const entry = {
-            id: Date.now(),
-            date,
-            startTime,
-            endTime,
-            project,
-            description,
-            duration: this.calculateDuration(startTime, endTime)
-        };
-
-        this.entries.unshift(entry); // Add to beginning
+        
+        // Add all valid entries
+        validEntries.forEach(entry => {
+            this.entries.unshift(entry);
+        });
+        
         this.saveEntries();
 
         // Reset form
@@ -173,6 +268,11 @@ class TimeTracker {
         document.getElementById('newProjectInput').classList.add('hidden');
         document.getElementById('newProjectInput').required = false;
         document.getElementById('project').required = true;
+        
+        // Clear and reset time slots
+        document.getElementById('timeSlotsContainer').innerHTML = '';
+        this.timeSlotCounter = 0;
+        this.addTimeSlot();
 
         // Update UI
         this.updateProjectsDatalist();
