@@ -33,6 +33,11 @@ class TimeTracker {
             this.filterCurrentMonth();
         });
 
+        // Project select change listener
+        document.getElementById('project').addEventListener('change', (e) => {
+            this.handleProjectSelectChange(e.target.value);
+        });
+
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -62,6 +67,35 @@ class TimeTracker {
         localStorage.setItem('timeTrackerEntries', JSON.stringify(this.entries));
     }
 
+    // Convert 12-hour time to 24-hour format
+    convertTo24Hour(hour, minute, period) {
+        let hour24 = hour;
+        if (period === 'AM') {
+            if (hour === 12) hour24 = 0;
+        } else { // PM
+            if (hour !== 12) hour24 = hour + 12;
+        }
+        return `${hour24.toString().padStart(2, '0')}:${minute}`;
+    }
+
+    // Handle project select change
+    handleProjectSelectChange(value) {
+        const newProjectInput = document.getElementById('newProjectInput');
+        const projectSelect = document.getElementById('project');
+        
+        if (value === '__new__') {
+            newProjectInput.classList.remove('hidden');
+            newProjectInput.required = true;
+            newProjectInput.focus();
+            projectSelect.required = false;
+        } else {
+            newProjectInput.classList.add('hidden');
+            newProjectInput.required = false;
+            newProjectInput.value = '';
+            projectSelect.required = true;
+        }
+    }
+
     // Switch between tabs
     switchTab(tabId) {
         // Update tab buttons
@@ -84,9 +118,34 @@ class TimeTracker {
     // Add new time entry
     addEntry() {
         const date = document.getElementById('date').value;
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
-        const project = document.getElementById('project').value.trim();
+        
+        // Get start time from 3 inputs
+        const startHour = parseInt(document.getElementById('startHour').value);
+        const startMinute = document.getElementById('startMinute').value;
+        const startPeriod = document.getElementById('startPeriod').value;
+        const startTime = this.convertTo24Hour(startHour, startMinute, startPeriod);
+        
+        // Get end time from 3 inputs
+        const endHour = parseInt(document.getElementById('endHour').value);
+        const endMinute = document.getElementById('endMinute').value;
+        const endPeriod = document.getElementById('endPeriod').value;
+        const endTime = this.convertTo24Hour(endHour, endMinute, endPeriod);
+        
+        const projectSelect = document.getElementById('project');
+        const newProjectInput = document.getElementById('newProjectInput');
+        
+        // Get project from select or new input
+        let project;
+        if (projectSelect.value === '__new__') {
+            project = newProjectInput.value.trim();
+            if (!project) {
+                alert('Please enter a project name!');
+                return;
+            }
+        } else {
+            project = projectSelect.value.trim();
+        }
+        
         const description = document.getElementById('description').value.trim();
 
         // Validate end time is after start time
@@ -111,6 +170,9 @@ class TimeTracker {
         // Reset form
         document.getElementById('timeEntryForm').reset();
         document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('newProjectInput').classList.add('hidden');
+        document.getElementById('newProjectInput').required = false;
+        document.getElementById('project').required = true;
 
         // Update UI
         this.updateProjectsDatalist();
@@ -262,11 +324,21 @@ class TimeTracker {
 
     // Update projects datalist for autocomplete
     updateProjectsDatalist() {
-        const projects = [...new Set(this.entries.map(entry => entry.project))];
-        const datalist = document.getElementById('projectsList');
-        datalist.innerHTML = projects.map(project => 
-            `<option value="${project}">`
-        ).join('');
+        const projects = [...new Set(this.entries.map(entry => entry.project))].sort();
+        const select = document.getElementById('project');
+        const currentValue = select.value;
+        
+        select.innerHTML = '<option value="">Select a project...</option>' + 
+            projects.map(project => 
+                `<option value="${this.escapeHtml(project)}">${this.escapeHtml(project)}</option>`
+            ).join('') +
+            '<option value="__new__">➕ Add New Project...</option>';
+        
+        // Restore previous selection if it still exists or was __new__
+        if (currentValue && (projects.includes(currentValue) || currentValue === '__new__')) {
+            select.value = currentValue;
+            this.handleProjectSelectChange(currentValue);
+        }
     }
 
     // Update filter project dropdown

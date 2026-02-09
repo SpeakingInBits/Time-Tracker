@@ -187,6 +187,35 @@ textarea {
     font-style: italic;
 }
 
+.hidden {
+    display: none !important;
+}
+
+#newProjectInput {
+    margin-top: 8px;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-inputs input[type="number"] {
+    width: 70px;
+    text-align: center;
+}
+
+.time-inputs select {
+    width: 80px;
+}
+
+.time-separator {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
 .btn {
     padding: 12px 24px;
     border: none;
