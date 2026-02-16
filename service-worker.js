@@ -1,5 +1,5 @@
 // Service Worker for Time Tracker PWA
-const CACHE_NAME = 'time-tracker-v2';
+const CACHE_NAME = 'time-tracker-v492d534';
 const urlsToCache = [
   './',
   './index.html',
